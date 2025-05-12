@@ -1,38 +1,22 @@
 <?php 
-use Illuminate\Routing\Route;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Route;
 
 Route::post('/data', function (Request $request) {
-    // Validate ID and Ref
-    $request->validate([
-        'ID' => 'required|string',
-        'Ref' => 'required|string',
-    ]);
-
-    $id = $request->input('ID');
-    $ref = $request->input('Ref');
-
-    $savedFiles = [];
-
-    // Loop through files that match image_0, image_1, ...
-    foreach ($request->allFiles() as $key => $image) {
-        if (Str::startsWith($key, 'image_') && $image->isValid()) {
-            $filename = $id . '_' . $ref . '_' . $key . '_' . Str::uuid() . '.' . $image->getClientOriginalExtension();
-            $image->storeAs('public/uploads', $filename);
-            $savedFiles[] = [
-                'key' => $key,
-                'file_name' => $filename,
-                'url' => asset(Storage::url('uploads/' . $filename)),
-            ];
-        }
+    // Handle the image upload here
+    if ($request->hasFile('image')) {
+        $image = $request->file('image');
+        // You can move the file or process it as needed
+        $path = $image->store('uploads', 'public');
+        return response()->json(['message' => 'Image uploaded successfully', 'path' => $path]);
     }
 
-    return response()->json([
-        'message' => 'Images uploaded successfully',
-        'ID' => $id,
-        'Ref' => $ref,
-        'files' => $savedFiles,
-    ]);
+    return response()->json(['error' => 'No image uploaded'], 400);
 });
+
+use App\Http\Controllers\Api\ImageController;
+
+Route::get('/images', [ImageController::class, 'index']);
+
+
+Route::post('/upload', [ImageController::class, 'upload']);

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+use App\Http\Controllers\UploadController;
+
+Route::post('/api/data', [UploadController::class, 'uploadImage']);
+Route::get('/api/images', [UploadController::class, 'getImages']);
